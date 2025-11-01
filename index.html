@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud Collaboration — Starter</title>
+  <style>
+    /* 🌥️ Simple modern style for your Sign Up / Sign In page */
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f6f7fb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 45%;
+      padding: 10px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4a90e2;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #357ac9;
+    }
+
+    #message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Cloud Collaboration — Starter</h2>
+    <p>Sign up / Sign in</p>
+
+    <input type="email" id="email" placeholder="Enter your email" />
+    <input type="password" id="password" placeholder="Enter your password" />
+
+    <div>
+      <button id="signup-btn">Sign Up</button>
+      <button id="signin-btn">Sign In</button>
+    </div>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- ✅ Connect Firebase Script -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDoSt5GFZSOdyFxtEkDkeISqmPEhqjNVZM",
+    authDomain: "cloudcollabproject.firebaseapp.com",
+    projectId: "cloudcollabproject",
+    storageBucket: "cloudcollabproject.appspot.com",
+    messagingSenderId: "1006881810271",
+    appId: "1:1006881810271:web:6e167d95219d66ab7178ea"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const messageEl = document.getElementById("message");
+
+  // ✅ Sign Up
+  document.getElementById("signup-btn").addEventListener("click", () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        messageEl.style.color = "green";
+        messageEl.textContent = "✅ User registered successfully!";
+      })
+      .catch((error) => {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Error: " + error.message;
+      });
+  });
+
+  // ✅ Sign In + Redirect
+  document.getElementById("signin-btn").addEventListener("click", () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        messageEl.style.color = "green";
+        messageEl.textContent = "✅ Signed in successfully! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "dashboard.html"; // 👈 Redirect after login
+        }, 1000);
+      })
+      .catch((error) => {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Error: " + error.message;
+      });
+  });
+</script>
+
+</body>
+</html>
