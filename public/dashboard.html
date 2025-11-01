@@ -1,129 +1,163 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — Cloud Collaboration</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cloud Collaboration Dashboard</title>
   <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: #f6f7fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      padding: 20px;
+    /* simple mobile-first styles to match your screenshots */
+    :root {
+      --primary: #2d73f5;
+      --rounded: 12px;
+      --blue-grad: linear-gradient(180deg,#2d73f5,#2a64d8);
+      --card-shadow: 0 6px 18px rgba(20,40,100,0.08);
     }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-    .container {
-      background: #fff;
-      border-radius: 16px;
-      padding: 25px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 400px;
-      text-align: center;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      background-color: #4a90e2;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover {
-      background-color: #3a7bd5;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #e8f0fe;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 6px;
-    }
-.note-box {
-  background: #e8f0fe;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.note-text {
-  margin: 0;
-  font-size: 15px;
-  word-wrap: break-word;
-}
-
-.note-actions {
-  display: flex;
-  gap: 10px;
-}
-
-button.editBtn, button.deleteBtn {
-  background-color: #f0f0f0;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-button.editBtn:hover {
-  background-color: #ffe58f;
-}
-
-button.deleteBtn:hover {
-  background-color: #ffb3b3;
-}
+    body{font-family: Poppins, system-ui, sans-serif; margin:0; background:#f6f8fb; color:#333}
+    header{background:var(--blue-grad); color:#fff; text-align:center; padding:20px 16px; font-size:2rem; font-weight:600}
+    .container{max-width:720px;margin:20px auto;padding:0 16px}
+    .hero{background:#fff;border-radius:16px;padding:28px 22px;box-shadow:var(--card-shadow);text-align:center}
+    .hero h1{margin:0;font-size:2rem;color:#254b9b}
+    .hero p{color:#666;margin:10px 0 18px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:12px;background:var(--primary);color:#fff;text-decoration:none;font-weight:600;box-shadow:0 6px 12px rgba(45,115,245,0.18)}
+    .btn.secondary{background:#fff;color:var(--primary);border:2px solid #dfe9ff}
+    .list{margin-top:18px}
+    .note-card{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 6px 18px rgba(20,40,100,0.04)}
+    .note-title{font-weight:600;color:#1b3566}
+    .note-meta{color:#6b7280;font-size:13px}
+    .actions button{margin-left:8px;padding:8px 10px;border-radius:10px;border:none;background:#2d73f5;color:#fff;cursor:pointer}
+    .footer{margin-top:28px;text-align:center;color:#666}
+    .create-row{display:flex; gap:8px; margin-top:18px; justify-content:center}
+    input[type="text"]{padding:10px 12px;border-radius:10px;border:1px solid #e6eefc;min-width:180px}
+    @media(min-width:800px){ .container{max-width:900px} }
   </style>
 </head>
-  <body>
-  <h1>Welcome to CloudCollab Dashboard ☁️</h1>
+<body>
+  <header>Cloud Collaboration Dashboard</header>
 
-  <div id="userInfo"></div>
+  <div class="container">
+    <div class="hero">
+      <h1>Cloud Collaboration Dashboard</h1>
+      <p>Welcome! Choose a page below to start real-time collaboration.</p>
 
-  <h2>Your Personal Notes</h2>
-  <textarea id="noteInput" placeholder="Write your personal note..."></textarea>
-  <button id="saveBtn">Save Note</button>
+      <div style="margin-top:12px">
+        <a class="btn" id="open-realtime">📝 Real-Time Collaboration</a>
+      </div>
 
-  <div id="notes"></div>
+      <div class="create-row">
+        <input id="newTitle" placeholder="New note title (optional)" />
+        <button class="btn" id="createNote">➕ Create Note</button>
+      </div>
 
-  <hr>
+      <div class="list" id="notesList">
+        <!-- list of notes will go here -->
+      </div>
 
-  <h2>Shared Team Notes</h2>
-  <textarea id="sharedInput" placeholder="Write a team note..."></textarea>
-  <button id="sharedSaveBtn">Add Shared Note</button>
+      <div class="footer">
+        Made with ❤️ using Firebase & JavaScript
+      </div>
+    </div>
+  </div>
 
-  <div id="sharedNotes"></div>
+  <!-- Firebase modular SDK (v9+) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-  <button id="logoutBtn">Logout</button>
+    // TODO: replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDoSt5GFZSOdyFxtEkDkeISqmPEhqjNVZM",
+      authDomain: "cloudcollabproject.firebaseapp.com",
+      projectId: "cloudcollabproject",
+      storageBucket: "cloudcollabproject.firebasestorage.app",
+      messagingSenderId: "1006881810271",
+      appId: "1:1006881810271:web:6e167d95219d66ab7178ea"
+    };
 
-  <style>
-    body { font-family: Arial; margin: 30px; }
-    textarea { width: 100%; height: 60px; margin-top: 10px; }
-    button { margin: 8px 0; padding: 8px 14px; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #2563eb; }
-    .note-box { background: #e8f0fe; padding: 10px; border-radius: 8px; margin: 10px 0; }
-    .note-actions button { background: #ffad33; margin-left: 8px; }
-    .deleteBtn { background: #ef4444; }
-  </style>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  <script type="module" src="dashboard.js"></script>
+    // sign in anonymously so Firestore rules that require auth will work
+    signInAnonymously(auth).catch(console.error);
+
+    // UI references
+    const notesList = document.getElementById('notesList');
+    const createBtn = document.getElementById('createNote');
+    const newTitle = document.getElementById('newTitle');
+    const openRealtimeBtn = document.getElementById('open-realtime');
+
+    openRealtimeBtn.addEventListener('click', () => {
+      // If there is at least one note, open first; else create one
+      // We'll open the first note in the list if exists
+      const first = notesList.querySelector('[data-id]');
+      if(first) {
+        const id = first.getAttribute('data-id');
+        window.location.href = `realtime.html?id=${id}`;
+      } else {
+        createAndOpen();
+      }
+    });
+
+    async function createAndOpen(){
+      const title = (newTitle.value || "Untitled note").slice(0, 60);
+      try {
+        const docRef = await addDoc(collection(db, "notes"), {
+          title,
+          content: "Hello",
+          updatedAt: new Date()
+        });
+        window.location.href = `realtime.html?id=${docRef.id}`;
+      } catch(err){ console.error(err); alert("Create failed: "+err.message) }
+    }
+
+    createBtn.addEventListener('click', createAndOpen);
+
+    // subscribe to notes collection
+    const q = query(collection(db, "notes"), orderBy("updatedAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      notesList.innerHTML = "";
+      if(snapshot.empty){
+        notesList.innerHTML = `<p style="color:#666;margin-top:12px">No notes yet — create one to get started.</p>`;
+        return;
+      }
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const id = docSnap.id;
+        const el = document.createElement('div');
+        el.className = 'note-card';
+        el.setAttribute('data-id', id);
+
+        const left = document.createElement('div');
+        left.innerHTML = `<div class="note-title">${escapeHtml(d.title || "Untitled")}</div><div class="note-meta">${d.updatedAt?.toDate ? d.updatedAt.toDate().toLocaleString() : ""}</div>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const openBtn = document.createElement('button');
+        openBtn.textContent = "Open";
+        openBtn.onclick = () => window.location.href = `realtime.html?id=${id}`;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Copy Link";
+        deleteBtn.style.background = "#10b981";
+        deleteBtn.onclick = async () => {
+          const url = `${location.origin}${location.pathname.replace(/[^\/]*$/,'') }realtime.html?id=${id}`;
+          await navigator.clipboard.writeText(url);
+          alert("Note link copied to clipboard");
+        };
+        actions.appendChild(openBtn);
+        actions.appendChild(deleteBtn);
+
+        el.appendChild(left);
+        el.appendChild(actions);
+        notesList.appendChild(el);
+      });
+    }, (err) => {
+      console.error(err);
+      notesList.innerHTML = `<p style="color:#c00">Error loading notes: ${escapeHtml(err.message)}</p>`;
+    });
+
+    // small helper to prevent XSS
+    function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]) }
+  </script>
 </body>
 </html>
