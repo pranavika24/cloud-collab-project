@@ -1,165 +1,118 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Note — Real-Time</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Collaboration</title>
   <style>
-    :root{--primary:#2d73f5;--rounded:12px}
-    body{font-family: Poppins, system-ui, sans-serif; margin:0; background:#f6f8fb; color:#222}
-    header{background:var(--primary); color:#fff; text-align:center; padding:18px;font-size:2rem;font-weight:600}
-    .container{max-width:720px;margin:18px auto;padding:0 16px}
-    .note-box{background:#fff;border-radius:12px;padding:18px;border:3px solid #cfe0ff;min-height:520px;box-shadow:0 6px 18px rgba(20,40,100,0.04)}
-    textarea{width:100%;height:100%;min-height:420px;border:none;outline:none;font-family:monospace;font-size:18px;resize:none}
-    .toolbar{display:flex;align-items:center;justify-content:space-between;margin:16px 0}
-    .btn{background:var(--primary);color:#fff;padding:10px 14px;border-radius:12px;border:none;cursor:pointer}
-    .status{display:flex;align-items:center;gap:8px;color:#444}
-    .dot{width:14px;height:14px;border-radius:50%;display:inline-block;background:#ccc}
-    .dot.online{background:#28a745}
-    .meta{color:#666;font-size:14px}
-    @media(min-width:900px){ .container{max-width:900px} }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(to bottom, #eef4ff, #ffffff);
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    h1 {
+      margin-top: 50px;
+      font-size: 2rem;
+      color: #1a56db;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 80%;
+      height: 300px;
+      margin-top: 25px;
+      border: 2px solid #1a56db;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 1rem;
+      resize: none;
+      outline: none;
+      box-shadow: 0 4px 10px rgba(26, 86, 219, 0.1);
+    }
+
+    textarea:focus {
+      border-color: #164bbd;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      margin-top: 30px;
+      border: none;
+      border-radius: 10px;
+      background-color: #1a56db;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(26, 86, 219, 0.2);
+    }
+
+    .btn:hover {
+      background-color: #164bbd;
+    }
+
+    .footer {
+      margin-top: 40px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .footer span {
+      color: red;
+    }
   </style>
 </head>
 <body>
-  <header>Note</header>
-  <div class="container">
-    <div class="toolbar">
-      <div>
-        <button class="btn" id="backBtn">⬅️ Back to Dashboard</button>
-      </div>
-      <div class="status">
-        <span id="connDot" class="dot"></span>
-        <div>
-          <div id="connText" class="meta">Connecting...</div>
-          <div id="docMeta" class="meta"></div>
-        </div>
-      </div>
-    </div>
+  <h1>📝 Real-Time Collaboration</h1>
+  <textarea id="sharedNote" placeholder="Start typing... Your note will sync in real time."></textarea>
+  <br />
 
-    <div class="note-box">
-      <textarea id="editor" placeholder="Start typing..."></textarea>
-    </div>
-  </div>
+  <!-- Back button centered below note box -->
+  <a href="dashboard.html" class="btn">⬅️ Back to Dashboard</a>
+
+  <p class="footer">Made with <span>❤️</span> using Firebase & JavaScript</p>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-    // TODO: replace with your Firebase config
+    // 🔧 Your Firebase configuration (replace with your own)
     const firebaseConfig = {
       apiKey: "AIzaSyDoSt5GFZSOdyFxtEkDkeISqmPEhqjNVZM",
       authDomain: "cloudcollabproject.firebaseapp.com",
       projectId: "cloudcollabproject",
       storageBucket: "cloudcollabproject.firebasestorage.app",
       messagingSenderId: "1006881810271",
-      appId: "1:1006881810271:web:6e167d95219d66ab7178ea"
+      appId: "1:1006881810271:web:6e167d95219d66ab7178ea" 
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const noteRef = ref(db, "sharedNote");
 
-    // sign in anonymously
-    signInAnonymously(auth).catch(console.error);
+    const textarea = document.getElementById("sharedNote");
 
-    const urlParams = new URLSearchParams(location.search);
-    let noteId = urlParams.get('id');
-
-    // If no id, create a new note and redirect
-    if(!noteId) {
-      (async () => {
-        try {
-          // create minimal note doc by using setDoc with auto id via temporary doc ref
-          const tempRef = doc(db, 'notes', Math.random().toString(36).slice(2,10));
-          await setDoc(tempRef, { title: "Untitled", content: "Hello", updatedAt: serverTimestamp() });
-          location.replace(`realtime.html?id=${tempRef.id}`);
-        } catch(e){ console.error(e); alert("Failed to create note: "+e.message) }
-      })();
-    } else {
-      initNote(noteId);
-    }
-
-    function byId(id){ return document.getElementById(id) }
-    const editor = byId('editor');
-    const backBtn = byId('backBtn');
-    const connDot = byId('connDot');
-    const connText = byId('connText');
-    const docMeta = byId('docMeta');
-
-    backBtn.addEventListener('click', () => location.href = 'dashboard.html');
-
-    let localChange = false;
-    let writeInProgress = false;
-    let saveTimer = null;
-
-    async function initNote(id) {
-      const noteRef = doc(db, 'notes', id);
-
-      // initial fetch (optional)
-      const snapshot = await getDoc(noteRef);
-      if(snapshot.exists()){
-        const d = snapshot.data();
-        editor.value = d.content || "";
-        docMeta.textContent = d.title ? `${d.title}` : '';
+    // Update text in real-time from database
+    onValue(noteRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data !== null && data !== textarea.value) {
+        textarea.value = data;
       }
+    });
 
-      // realtime listener
-      onSnapshot(noteRef, (snap) => {
-        if(!snap.exists()) {
-          connText.textContent = "Note not found";
-          connDot.className = 'dot';
-          return;
-        }
-        const data = snap.data();
-        // Show connection / metadata
-        connText.textContent = navigator.onLine ? "Connected (changes sync automatically)" : "Offline (changes will sync when back online)";
-        connDot.className = 'dot ' + (navigator.onLine ? 'online' : '');
-
-        // if update came from server and not local pending writes, update editor
-        const origin = snap.metadata.hasPendingWrites ? 'local' : 'server';
-        if(origin === 'server' && editor.value !== (data.content || "")) {
-          // preserve selection if user is typing? Here we simply update content
-          editor.value = data.content || "";
-        }
-
-        docMeta.textContent = data.title ? `${data.title} · updated ${data.updatedAt?.toDate ? data.updatedAt.toDate().toLocaleTimeString() : ''}` : '';
-      }, (err) => {
-        console.error(err);
-        connText.textContent = "Error: " + err.message;
-        connDot.className = 'dot';
-      });
-
-      // typing -> debounced update
-      editor.addEventListener('input', () => {
-        if(writeInProgress) return;
-        if(saveTimer) clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => {
-          saveLocalChanges(noteRef, editor.value);
-        }, 550); // debounce 550ms
-      });
-    }
-
-    async function saveLocalChanges(noteRef, content) {
-      writeInProgress = true;
-      try {
-        await updateDoc(noteRef, {
-          content,
-          updatedAt: serverTimestamp()
-        });
-      } catch(e) {
-        // if doc doesn't exist we fallback to setDoc
-        try { await setDoc(noteRef, { content, updatedAt: serverTimestamp() }, { merge:true }); }
-        catch(err){ console.error("save error",err) }
-      } finally {
-        writeInProgress = false;
-      }
-    }
-
-    // reflect online/offline changes
-    window.addEventListener('online', () => { connText.textContent = "Connected (changes sync automatically)"; connDot.className = 'dot online'; });
-    window.addEventListener('offline', () => { connText.textContent = "Offline (changes will sync when back online)"; connDot.className = 'dot'; });
-
+    // Save changes as user types
+    textarea.addEventListener("input", () => {
+      set(noteRef, textarea.value);
+    });
   </script>
 </body>
 </html>
