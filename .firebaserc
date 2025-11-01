@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "cloudcollabproject"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
