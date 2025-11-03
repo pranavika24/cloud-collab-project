@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Mode Demo</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f6f8ff;
+      text-align: center;
+      padding: 50px;
+      color: #333;
+    }
+    h1 {
+      color: #1a56db;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: 600;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Offline Mode Demo</h1>
+  <p>This page simulates working offline. Try turning off your internet and refreshing.</p>
+  <div id="status"></div>
+
+  <script>
+    const status = document.getElementById("status");
+
+    function updateStatus() {
+      if (!navigator.onLine) {
+        status.textContent = "⚠️ You’re Offline. Changes will sync when online.";
+      } else {
+        status.textContent = "✅ You are Online!";
+      }
+    }
+
+    window.addEventListener("load", updateStatus);
+    window.addEventListener("online", updateStatus);
+    window.addEventListener("offline", updateStatus);
+  </script>
+</body>
+</html>

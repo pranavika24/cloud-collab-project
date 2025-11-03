@@ -7,6 +7,7 @@ const urlsToCache = [
   "/dashboard.html",
   "/realtime.html",
   "/offline.html",
+  "/offline-demo.html",
   "/styles.css",
   "/app.js",
   "/dashboard.js",
@@ -23,12 +24,11 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Fetch: serve from cache first
+// Fetch: serve from cache if offline
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // clone & store new response
         const resClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
         return response;
@@ -37,7 +37,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Activate: clear old caches
+// Activate: remove old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>

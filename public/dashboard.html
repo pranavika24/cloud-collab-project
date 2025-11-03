@@ -47,10 +47,6 @@
       background-color: #164bbd;
     }
 
-    .emoji {
-      margin-right: 6px;
-    }
-
     .footer {
       margin-top: 60px;
       color: #666;
@@ -69,20 +65,26 @@
     Choose a page below to start collaborating or testing offline mode.
   </p>
 
-  <a href="realtime.html" class="btn">
-    <span class="emoji">📝</span> Real-Time Collaboration
-  </a>
-  <br />
-  <a href="#" class="btn">
-    <span class="emoji">📶</span> Offline Mode Demo
-  </a>
-  <br />
-  <a href="#" class="btn">
-    <span class="emoji">📊</span> Offline Mode
-  </a>
+  <div class="buttons">
+    <a href="realtime.html" class="btn">📄 Real-Time Collaboration</a>
+    <a href="offline-demo.html" class="btn">📊 Offline Mode Demo</a>
+    <a href="offline.html" class="btn">📱 Offline Mode</a>
+  </div>
 
   <p class="footer">
     Made with <span>❤️</span> using Firebase & JavaScript
   </p>
+
+  <script>
+    // ✅ Register service worker for offline caching
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("sw.js")
+          .then(() => console.log("Service Worker registered successfully."))
+          .catch((err) => console.log("SW registration failed:", err));
+      });
+    }
+  </script>
 </body>
 </html>
