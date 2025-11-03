@@ -1,120 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Real-Time Collaboration</title>
-  <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(to bottom, #eef4ff, #ffffff);
-      text-align: center;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Collaboration</title>
+    <link rel="icon" href="favicon.ico" />
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(to bottom right, #eef3ff, #e8f0ff);
+        text-align: center;
+        padding: 20px;
+        margin: 0;
+      }
 
-    h1 {
-      margin-top: 50px;
-      font-size: 2rem;
-      color: #1a56db;
-      font-weight: 700;
-    }
+      h1 {
+        color: #0b57d0;
+        margin-top: 20px;
+        font-weight: bold;
+      }
 
-    textarea {
-      width: 80%;
-      height: 300px;
-      margin-top: 25px;
-      border: 2px solid #1a56db;
-      border-radius: 10px;
-      padding: 15px;
-      font-size: 1rem;
-      resize: none;
-      outline: none;
-      box-shadow: 0 4px 10px rgba(26, 86, 219, 0.1);
-    }
+      textarea {
+        width: 80%;
+        height: 300px;
+        margin-top: 20px;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 16px;
+        outline: none;
+        resize: none;
+      }
 
-    textarea:focus {
-      border-color: #164bbd;
-    }
+      button {
+        background-color: #0066ff;
+        color: white;
+        padding: 12px 24px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+      }
 
-    .btn {
-      display: inline-block;
-      padding: 12px 20px;
-      margin-top: 30px;
-      border: none;
-      border-radius: 10px;
-      background-color: #1a56db;
-      color: white;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: 0.3s;
-      box-shadow: 0 4px 10px rgba(26, 86, 219, 0.2);
-    }
+      button:hover {
+        background-color: #004ecb;
+      }
 
-    .btn:hover {
-      background-color: #164bbd;
-    }
+      footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #555;
+      }
 
-    .footer {
-      margin-top: 40px;
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    .footer span {
-      color: red;
-    }
-  </style>
-</head>
-<body>
+      #status {
+        margin-top: 10px;
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .online {
+        color: green;
+      }
+      .offline {
+        color: red;
+      }
+      .saving {
+        color: #f39c12;
+      }
+    </style>
+  </head>
+  <body>
   <h1>📝 Real-Time Collaboration</h1>
+  <p id="status" style="color:gray;">Connecting...</p>
+  <p id="userInfo" style="font-weight:600; color:#1a56db;"></p>
+
+  <!-- Active Users List -->
+  <div id="activeUsersContainer" style="margin:20px auto; padding:10px; width:60%; background:#f7f9ff; border-radius:8px; border:1px solid #d6e0ff;">
+    <h3 style="color:#1a56db;">👥 Active Users</h3>
+    <ul id="activeUsers" style="list-style:none; padding:0;"></ul>
+  </div>
+
+  <!-- Shared Note -->
   <textarea id="sharedNote" placeholder="Start typing... Your note will sync in real time."></textarea>
   <br />
-
-  <!-- Back button centered below note box -->
   <a href="dashboard.html" class="btn">⬅️ Back to Dashboard</a>
-
   <p class="footer">Made with <span>❤️</span> using Firebase & JavaScript</p>
 
   <script type="module">
-    // ✅ Import Firebase SDKs (v10+)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
 
-    // ✅ Your Firebase configuration (replace with your actual config)
     const firebaseConfig = {
-      apiKey: "AIzaSyDoSt5GFZSOdyFxtEkDkeISqmPEhqjNVZM",
-      authDomain: "cloudcollabproject.firebaseapp.com",
-      databaseURL: "https://cloudcollabproject-default-rtdb.firebaseio.com",
-      projectId: "cloudcollabproject",
-      storageBucket: "cloudcollabproject.firebasestorage.app",
-      messagingSenderId: "1006881810271",
-      appId: "1:1006881810271:web:6e167d95219d66ab7178ea"
-    };
+  apiKey: "AIzaSyDoSt5GFZSOdyFxtEkDkeISqmPEhqjNVZM",
+  authDomain: "cloudcollabproject.firebaseapp.com",
+  databaseURL: "https://cloudcollabproject-default-rtdb.firebaseio.com",
+  projectId: "cloudcollabproject",
+  storageBucket: "cloudcollabproject.firebasestorage.app",
+  messagingSenderId: "1006881810271",
+  appId: "1:1006881810271:web:6e167d95219d66ab7178ea"
+}
 
-    // ✅ Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Reference to shared note
-    const noteRef = ref(db, "sharedNote");
-    const textarea = document.getElementById("sharedNote");
+    const username = localStorage.getItem("username") || "Guest";
+    document.getElementById("userInfo").textContent = "Logged in as: " + username;
 
-    // ✅ Receive updates in real-time
+    const noteRef = ref(db, "sharedNote");
+    const usersRef = ref(db, "activeUsers");
+    const userStatusRef = ref(db, "activeUsers/" + username);
+    const textarea = document.getElementById("sharedNote");
+    const status = document.getElementById("status");
+    const activeUsersList = document.getElementById("activeUsers");
+
+    // ✅ Presence tracking: mark user active
+    set(userStatusRef, true);
+    window.addEventListener("beforeunload", () => remove(userStatusRef));
+
+    // ✅ Real-time editor updates
     onValue(noteRef, (snapshot) => {
       const data = snapshot.val();
-      if (data !== null && data !== textarea.value) {
-        textarea.value = data;
-      }
+      if (data !== null && data !== textarea.value) textarea.value = data;
     });
 
-    // ✅ Save updates when user types
     textarea.addEventListener("input", () => {
       set(noteRef, textarea.value);
     });
+
+    // ✅ Show active users live
+    onValue(usersRef, (snapshot) => {
+      const users = snapshot.val();
+      activeUsersList.innerHTML = "";
+      if (users) {
+        Object.keys(users).forEach((name) => {
+          const li = document.createElement("li");
+          li.textContent = name === username ? name + " (You)" : name;
+          li.style.margin = "5px 0";
+          li.style.color = name === username ? "#1a56db" : "#333";
+          activeUsersList.appendChild(li);
+        });
+      } else {
+        activeUsersList.innerHTML = "<li>No one is online 😴</li>";
+      }
+    });
+
+    // ✅ Connection indicator
+    window.addEventListener("online", () => {
+      status.textContent = "🟢 Connected";
+      status.style.color = "green";
+    });
+    window.addEventListener("offline", () => {
+      status.textContent = "🔴 Offline";
+      status.style.color = "red";
+    });
+    if (navigator.onLine) status.textContent = "🟢 Connected";
+    else status.textContent = "🔴 Offline";
   </script>
 </body>
+
 </html>

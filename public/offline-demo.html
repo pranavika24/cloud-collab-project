@@ -7,40 +7,92 @@
   <style>
     body {
       font-family: "Poppins", sans-serif;
-      background: #f6f8ff;
       text-align: center;
-      padding: 50px;
+      background: linear-gradient(to bottom, #eef4ff, #ffffff);
       color: #333;
+      margin: 0;
+      padding: 0;
     }
+
     h1 {
+      margin-top: 60px;
+      font-size: 2rem;
       color: #1a56db;
+      font-weight: 700;
     }
+
+    p {
+      font-size: 1rem;
+      color: #444;
+    }
+
     #status {
-      margin-top: 20px;
+      margin-top: 30px;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1.2rem;
       font-weight: 600;
-      color: #555;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .online {
+      background-color: #e6f9e6;
+      color: #2b8a3e;
+      border: 2px solid #2b8a3e;
+    }
+
+    .offline {
+      background-color: #ffe6e6;
+      color: #c0392b;
+      border: 2px solid #c0392b;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: #1a56db;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(26, 86, 219, 0.2);
+    }
+
+    .btn:hover {
+      background: #164bbd;
     }
   </style>
 </head>
 <body>
-  <h1>Offline Mode Demo</h1>
-  <p>This page simulates working offline. Try turning off your internet and refreshing.</p>
-  <div id="status"></div>
+  <h1>📶 Offline Mode Demo</h1>
+  <p>Turn off your Wi-Fi or Internet to test how the app reacts offline.</p>
+
+  <div id="status" class="online">✅ Connected</div>
+
+  <a href="dashboard.html" class="btn">⬅️ Back to Dashboard</a>
 
   <script>
-    const status = document.getElementById("status");
+    const statusDiv = document.getElementById("status");
 
     function updateStatus() {
-      if (!navigator.onLine) {
-        status.textContent = "⚠️ You’re Offline. Changes will sync when online.";
+      if (navigator.onLine) {
+        statusDiv.textContent = "✅ Connected";
+        statusDiv.className = "online";
       } else {
-        status.textContent = "✅ You are Online!";
+        statusDiv.textContent = "⚠️ You’re Offline. Changes will sync when online.";
+        statusDiv.className = "offline";
       }
     }
 
-    window.addEventListener("load", updateStatus);
+    // Detect changes
     window.addEventListener("online", updateStatus);
     window.addEventListener("offline", updateStatus);
+
+    // Run once on load
+    updateStatus();
   </script>
 </body>
 </html>
